@@ -16,13 +16,14 @@ import {
   Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUnreadAlerts } from "@/hooks/useUnreadAlerts";
 
 const navigation = [
   { name: "Tableau de Campagne", href: "/", icon: LayoutDashboard },
   { name: "Les Maréchaux", href: "/marechaux", icon: Shield },
   { name: "Journal de Campagne", href: "/journal", icon: ScrollText },
   { name: "Trésor de Guerre", href: "/tresor", icon: Coins },
-  { name: "Dépêches", href: "/depeches", icon: Bell },
+  { name: "Dépêches", href: "/depeches", icon: Bell, badge: true },
   { name: "État-Major", href: "/etat-major", icon: Settings },
   { name: "Aide de Camp", href: "/aide", icon: BookOpen },
 ];
@@ -30,6 +31,7 @@ const navigation = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const unreadCount = useUnreadAlerts();
 
   return (
     <aside
@@ -65,7 +67,7 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors duration-200 relative",
                 isActive
                   ? "bg-imperial-gold/10 text-imperial-gold border border-imperial-gold/30"
                   : "text-imperial-muted hover:text-imperial-cream hover:bg-white/5"
@@ -73,6 +75,11 @@ export default function Sidebar() {
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
               {!collapsed && <span>{item.name}</span>}
+              {item.badge && unreadCount > 0 && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}
