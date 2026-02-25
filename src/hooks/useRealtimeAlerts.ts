@@ -12,28 +12,35 @@ export function useRealtimeAlerts(initialAlerts: Alert[] = []) {
   }, [initialAlerts]);
 
   useEffect(() => {
-    const channel = supabasePublic
-      .channel("realtime-alerts")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "alerts" },
-        (payload) => {
-          setAlerts((prev) => [payload.new as Alert, ...prev]);
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "alerts" },
-        (payload) => {
-          setAlerts((prev) =>
-            prev.map((a) => (a.id === (payload.new as Alert).id ? (payload.new as Alert) : a))
-          );
-        }
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabasePublic.channel> | null = null;
+    try {
+      channel = supabasePublic
+        .channel("realtime-alerts")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "alerts" },
+          (payload) => {
+            setAlerts((prev) => [payload.new as Alert, ...prev]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "alerts" },
+          (payload) => {
+            setAlerts((prev) =>
+              prev.map((a) => (a.id === (payload.new as Alert).id ? (payload.new as Alert) : a))
+            );
+          }
+        )
+        .subscribe();
+    } catch {
+      // Realtime unavailable — static data only
+    }
 
     return () => {
-      supabasePublic.removeChannel(channel);
+      if (channel) {
+        try { supabasePublic.removeChannel(channel); } catch {}
+      }
     };
   }, []);
 

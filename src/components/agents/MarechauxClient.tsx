@@ -1,13 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Agent } from "@/types/database";
 import { useRealtimeAgents } from "@/hooks/useRealtimeAgents";
 import AgentCard from "@/components/agents/AgentCard";
-import OrgChart from "@/components/agents/OrgChart";
 import Link from "next/link";
 
+const OrgChart = dynamic(() => import("@/components/agents/OrgChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] rounded-lg border border-imperial-gold/20 flex items-center justify-center">
+      <p className="text-imperial-muted">Chargement de l&apos;organigramme…</p>
+    </div>
+  ),
+});
+
 export default function MarechauxClient({ initialAgents }: { initialAgents: Agent[] }) {
-  const agents = useRealtimeAgents(initialAgents);
+  const agents = useRealtimeAgents(initialAgents ?? []);
 
   return (
     <div className="space-y-8">
@@ -25,14 +34,14 @@ export default function MarechauxClient({ initialAgents }: { initialAgents: Agen
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {agents.map((agent) => (
+        {(agents ?? []).map((agent) => (
           <Link key={agent.id} href={`/marechaux/${agent.id}`} className="block hover:scale-[1.01] transition-transform">
             <AgentCard agent={agent} />
           </Link>
         ))}
       </div>
 
-      {agents.length === 0 && (
+      {(!agents || agents.length === 0) && (
         <div className="card-imperial text-center py-12">
           <p className="text-imperial-muted">Aucun maréchal enregistré</p>
         </div>
