@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabasePublic } from "@/lib/supabase";
+import { getSupabasePublic } from "@/lib/supabase";
 import { Action } from "@/types/database";
 
 export function useRealtimeActions(initialActions: Action[] = []) {
@@ -12,9 +12,10 @@ export function useRealtimeActions(initialActions: Action[] = []) {
   }, [initialActions]);
 
   useEffect(() => {
-    let channel: ReturnType<typeof supabasePublic.channel> | null = null;
+    let channel: any | null = null;
+    const client = getSupabasePublic(); if (!client) return;
     try {
-      channel = supabasePublic
+      channel = client
         .channel("realtime-actions")
         .on(
           "postgres_changes",
@@ -39,7 +40,7 @@ export function useRealtimeActions(initialActions: Action[] = []) {
 
     return () => {
       if (channel) {
-        try { supabasePublic.removeChannel(channel); } catch {}
+        try { client.removeChannel(channel); } catch {}
       }
     };
   }, []);

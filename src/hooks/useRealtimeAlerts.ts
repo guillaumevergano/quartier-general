@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabasePublic } from "@/lib/supabase";
+import { getSupabasePublic } from "@/lib/supabase";
 import { Alert } from "@/types/database";
 
 export function useRealtimeAlerts(initialAlerts: Alert[] = []) {
@@ -12,9 +12,10 @@ export function useRealtimeAlerts(initialAlerts: Alert[] = []) {
   }, [initialAlerts]);
 
   useEffect(() => {
-    let channel: ReturnType<typeof supabasePublic.channel> | null = null;
+    let channel: any | null = null;
+    const client = getSupabasePublic(); if (!client) return;
     try {
-      channel = supabasePublic
+      channel = client
         .channel("realtime-alerts")
         .on(
           "postgres_changes",
@@ -39,7 +40,7 @@ export function useRealtimeAlerts(initialAlerts: Alert[] = []) {
 
     return () => {
       if (channel) {
-        try { supabasePublic.removeChannel(channel); } catch {}
+        try { client.removeChannel(channel); } catch {}
       }
     };
   }, []);

@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabasePublic } from "@/lib/supabase";
+import { getSupabasePublic } from "@/lib/supabase";
 
 export function useUnreadAlerts() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    const client = getSupabasePublic(); if (!client) return;
     try {
-      supabasePublic
+      client
         .from("alerts")
         .select("id", { count: "exact", head: true })
         .eq("is_read", false)
@@ -17,9 +18,9 @@ export function useUnreadAlerts() {
       // Silently fail — show 0 unread
     }
 
-    let channel: ReturnType<typeof supabasePublic.channel> | null = null;
+    let channel: any | null = null;
     try {
-      channel = supabasePublic
+      channel = client
         .channel("unread-alerts-count")
         .on(
           "postgres_changes",
@@ -47,7 +48,7 @@ export function useUnreadAlerts() {
 
     return () => {
       if (channel) {
-        try { supabasePublic.removeChannel(channel); } catch {}
+        try { client.removeChannel(channel); } catch {}
       }
     };
   }, []);
