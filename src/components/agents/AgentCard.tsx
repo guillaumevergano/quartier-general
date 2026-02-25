@@ -1,64 +1,103 @@
+import Link from "next/link";
 import { Agent } from "@/types/database";
+import { Shield, Cpu } from "lucide-react";
 import { AGENT_COLORS } from "@/lib/utils";
-import { cn } from "@/lib/utils";
-import { Shield, Cpu, Radio } from "lucide-react";
 
-const statusColors: Record<string, string> = {
-  online: "bg-imperial-success",
-  offline: "bg-imperial-muted/50",
-  busy: "bg-imperial-warning",
-};
+interface AgentCardProps {
+  agent: Agent;
+}
 
-export default function AgentCard({ agent }: { agent: Agent }) {
+export default function AgentCard({ agent }: AgentCardProps) {
   const color = AGENT_COLORS[agent.id] || "#C9A84C";
 
-  return (
-    <div className="card-imperial relative overflow-hidden">
-      {/* Accent bar */}
-      <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: color }} />
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
-      <div className="pl-4">
-        <div className="flex items-start justify-between">
-          <div>
+  return (
+    <Link href={`/marechaux/${agent.id}`}>
+      <div className="card-imperial hover:border-imperial-gold/40 transition-all duration-200 group">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            {agent.avatar_url ? (
+              <img
+                src={agent.avatar_url}
+                alt={`Avatar de ${agent.name}`}
+                className="w-12 h-12 rounded-lg object-cover border border-imperial-gold/20"
+              />
+            ) : (
+              <div 
+                className="w-12 h-12 rounded-lg flex items-center justify-center border" 
+                style={{ 
+                  backgroundColor: `${color}20`, 
+                  borderColor: color 
+                }}
+              >
+                <div className="text-sm font-display" style={{ color }}>
+                  {getInitials(agent.name)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-display text-xl text-imperial-cream">{agent.name}</h3>
-              <div className={cn("w-2.5 h-2.5 rounded-full", statusColors[agent.status])} />
+              <h3 className="font-display text-imperial-cream group-hover:text-imperial-gold transition-colors truncate">
+                {agent.name}
+              </h3>
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                agent.status === "online" 
+                  ? "bg-imperial-success" 
+                  : agent.status === "busy" 
+                    ? "bg-imperial-warning" 
+                    : "bg-imperial-muted/50"
+              }`} />
             </div>
+
             {agent.grade && (
-              <p className="font-badge text-xs text-imperial-gold tracking-widest mt-1">
+              <p className="font-badge text-xs tracking-widest mt-0.5" style={{ color }}>
                 {agent.grade}
               </p>
             )}
+
             {agent.title && (
-              <p className="font-subtitle text-imperial-muted italic mt-0.5">{agent.title}</p>
+              <p className="font-subtitle text-sm text-imperial-muted italic">
+                {agent.title}
+              </p>
+            )}
+
+            {agent.model && (
+              <div className="flex items-center gap-1 mt-1">
+                <Cpu className="w-3 h-3 text-imperial-muted" />
+                <span className="font-mono text-xs text-imperial-muted truncate">
+                  {agent.model}
+                </span>
+              </div>
             )}
           </div>
-          <div className="bg-imperial-gold/10 p-2 rounded-lg">
-            <Shield className="w-6 h-6 text-imperial-gold" />
+
+          {/* Icône */}
+          <div className="flex-shrink-0">
+            <Shield className="w-5 h-5" style={{ color }} />
           </div>
         </div>
 
-        <div className="mt-4 space-y-2">
-          {agent.model && (
-            <div className="flex items-center gap-2 text-sm text-imperial-muted">
-              <Cpu className="w-4 h-4" />
-              <span className="font-mono text-xs">{agent.model}</span>
-            </div>
-          )}
-          {agent.channels && Object.keys(agent.channels).length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-imperial-muted">
-              <Radio className="w-4 h-4" />
-              <span>{Object.keys(agent.channels).join(", ")}</span>
-            </div>
-          )}
-        </div>
-
-        {agent.is_default && (
-          <span className="inline-block mt-3 text-xs font-badge bg-imperial-gold/20 text-imperial-gold px-2 py-1 rounded">
-            AGENT PRINCIPAL
-          </span>
+        {/* Description si disponible */}
+        {agent.description && (
+          <div className="mt-3 pt-3 border-t border-imperial-gold/10">
+            <p className="text-sm text-imperial-muted line-clamp-2">
+              {agent.description}
+            </p>
+          </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

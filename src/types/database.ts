@@ -6,11 +6,14 @@ export interface Agent {
   model: string | null;
   workspace: string | null;
   avatar_url: string | null;
+  description: string | null;
   identity_md: string | null;
   soul_md: string | null;
   channels: Record<string, unknown> | null;
   status: "online" | "offline" | "busy";
   is_default: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Action {

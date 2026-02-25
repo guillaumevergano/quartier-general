@@ -31,6 +31,21 @@
   .badge-agent {
     @apply font-badge text-xs uppercase tracking-widest;
   }
+
+  .btn-imperial-primary {
+    @apply bg-imperial-gold text-imperial-bg font-badge uppercase tracking-wider text-sm px-4 py-2 rounded
+           hover:bg-imperial-gold/90 transition-colors duration-200 flex items-center;
+  }
+
+  .btn-imperial-secondary {
+    @apply bg-transparent text-imperial-gold border border-imperial-gold/40 font-badge uppercase tracking-wider text-sm px-4 py-2 rounded
+           hover:bg-imperial-gold/10 transition-colors duration-200 flex items-center;
+  }
+
+  .input-imperial {
+    @apply bg-imperial-bg-secondary border border-imperial-gold/20 text-imperial-cream px-3 py-2 rounded
+           focus:border-imperial-gold/60 focus:outline-none transition-colors duration-200;
+  }
 }
 
 /* Scrollbar styling */
