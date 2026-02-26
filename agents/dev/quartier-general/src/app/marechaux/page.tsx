@@ -7,124 +7,44 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArmyMember } from '@/types/database';
-import { useState } from 'react';
-
-// Données Mollien - Interface unifiée agents + humains
-const armyMembers: ArmyMember[] = [
-  // ÉQUIPE HUMAINE
-  {
-    id: 'guillaume',
-    name: 'Guillaume',
-    position: 'Directeur',
-    hourly_rate: 120,
-    type: 'human',
-    photo_url: '/avatars/guillaume.jpg',
-    emoji: '👨‍💼',
-    contract_type: 'CDI'
-  },
-  {
-    id: 'marie',
-    name: 'Marie',
-    position: 'DA',
-    hourly_rate: 85,
-    type: 'human',
-    photo_url: '/avatars/marie.jpg',
-    emoji: '🎨',
-    contract_type: 'CDI'
-  },
-  {
-    id: 'leana',
-    name: 'Léana',
-    position: 'UX/UI',
-    hourly_rate: 75,
-    type: 'human',
-    photo_url: '/avatars/leana.jpg',
-    emoji: '✏️',
-    contract_type: 'Freelance'
-  },
-  {
-    id: 'emilie',
-    name: 'Emilie',
-    position: 'Graphiste',
-    hourly_rate: 65,
-    type: 'human',
-    photo_url: '/avatars/emilie.jpg',
-    emoji: '🎭',
-    contract_type: 'CDI'
-  },
-  {
-    id: 'roland',
-    name: 'Roland',
-    position: 'Dev',
-    hourly_rate: 80,
-    type: 'human',
-    photo_url: '/avatars/roland.jpg',
-    emoji: '💻',
-    contract_type: 'CDI'
-  },
-  
-  // AGENTS
-  {
-    id: 'berthier',
-    name: 'Berthier',
-    position: 'Chef d\'état-major',
-    hourly_rate: 18,
-    type: 'agent',
-    photo_url: '/avatars/berthier.jpg',
-    emoji: '⭐',
-    model: 'Sonnet 4',
-    status: 'online'
-  },
-  {
-    id: 'murat',
-    name: 'Murat',
-    position: 'Éclaireur',
-    hourly_rate: 12,
-    type: 'agent',
-    photo_url: '/avatars/murat.jpg',
-    emoji: '🔍',
-    model: 'Sonnet 4',
-    status: 'busy'
-  },
-  {
-    id: 'davout',
-    name: 'Davout',
-    position: 'Gestionnaire',
-    hourly_rate: 15,
-    type: 'agent',
-    photo_url: '/avatars/davout.jpg',
-    emoji: '📊',
-    model: 'Sonnet 4',
-    status: 'online'
-  },
-  {
-    id: 'vauban',
-    name: 'Vauban',
-    position: 'Ingénieur',
-    hourly_rate: 40,
-    type: 'agent',
-    photo_url: '/avatars/vauban.jpg',
-    emoji: '🏗️',
-    model: 'Opus 4',
-    status: 'online'
-  },
-  {
-    id: 'mollien',
-    name: 'Mollien',
-    position: 'Trésorier',
-    hourly_rate: 12,
-    type: 'agent',
-    photo_url: '/avatars/mollien.jpg',
-    emoji: '💰',
-    model: 'Sonnet 4',
-    status: 'online'
-  }
-];
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export default function ArmeePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<ArmyMember | null>(null);
-  const [members, setMembers] = useState<ArmyMember[]>(armyMembers);
+  const [members, setMembers] = useState<ArmyMember[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Charger les membres depuis la base de données
+  const loadArmyMembers = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('army_members')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('Erreur chargement armée:', error);
+        toast.error('Erreur chargement des membres');
+        return;
+      }
+
+      setMembers(data || []);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur système');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Charger au montage du composant
+  useEffect(() => {
+    loadArmyMembers();
+  }, []);
   
   const totalMembers = members.length;
   const humanMembers = members.filter(member => member.type === 'human').length;
@@ -143,20 +63,50 @@ export default function ArmeePage() {
   };
 
   const handleSave = async (memberData: Partial<ArmyMember>) => {
-    if (editingMember) {
-      // Mise à jour
-      setMembers(prev => prev.map(m => 
-        m.id === editingMember.id ? { ...m, ...memberData } : m
-      ));
-    } else {
-      // Ajout
-      const newMember: ArmyMember = {
-        id: Date.now().toString(),
-        ...memberData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as ArmyMember;
-      setMembers(prev => [...prev, newMember]);
+    try {
+      if (editingMember) {
+        // Mise à jour
+        const { error } = await supabase
+          .from('army_members')
+          .update({
+            ...memberData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingMember.id);
+
+        if (error) {
+          console.error('Erreur mise à jour:', error);
+          toast.error('Erreur lors de la mise à jour');
+          return;
+        }
+
+        toast.success('Membre mis à jour');
+      } else {
+        // Ajout
+        const { error } = await supabase
+          .from('army_members')
+          .insert({
+            ...memberData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error('Erreur ajout:', error);
+          toast.error('Erreur lors de l\'ajout');
+          return;
+        }
+
+        toast.success('Membre ajouté');
+      }
+
+      // Recharger les données
+      await loadArmyMembers();
+      setIsModalOpen(false);
+      setEditingMember(null);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur système');
     }
   };
 
@@ -259,19 +209,37 @@ export default function ArmeePage() {
             Membres de l&apos;Armée
           </h2>
           <div className="text-xs text-muted-foreground font-cinzel">
-            Interface unifiée humains + agents
+            Données depuis la base army_members
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {members.map((member) => (
-            <ArmyMemberCard
-              key={member.id}
-              member={member}
-              onEdit={handleEdit}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-muted-foreground">Chargement de l'armée...</div>
+          </div>
+        ) : members.length === 0 ? (
+          <div className="text-center py-12">
+            <Crown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Aucun membre dans l'armée</p>
+            <Button 
+              onClick={handleAdd}
+              className="mt-4 bg-imperial-gold text-imperial-night hover:bg-imperial-gold/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter le premier membre
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {members.map((member) => (
+              <ArmyMemberCard
+                key={member.id}
+                member={member}
+                onEdit={handleEdit}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modal d'édition */}
