@@ -1,9 +1,9 @@
-import NextAuth from 'next-auth';
+import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { supabaseAdmin } from './supabase';
 import bcrypt from 'bcryptjs';
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -61,7 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.sub!;
       }
       return session;
@@ -71,4 +71,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: 'jwt'
   },
   secret: process.env.NEXTAUTH_SECRET
-});
+};
