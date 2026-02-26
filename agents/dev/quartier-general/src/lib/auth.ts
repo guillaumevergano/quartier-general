@@ -1,3 +1,4 @@
+import NextAuth from 'next-auth';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { supabaseAdmin } from './supabase';
@@ -72,3 +73,6 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET
 };
+
+// Export NextAuth instance avec auth et handlers
+export const { auth, handlers } = NextAuth(authOptions);
