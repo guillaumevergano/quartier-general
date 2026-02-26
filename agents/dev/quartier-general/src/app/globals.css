@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Source+Sans+3:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Cinzel:wght@400;500;600&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  /* Palette Napoléonienne */
+  --imperial-night: #0A1628;
+  --imperial-navy: #121E32;
+  --imperial-gold: #C9A84C;
+  --imperial-red: #8B2232;
+  --parchment-cream: #F5F0E8;
+  --warm-gray: #A09882;
+  --success: #2D6A4F;
+  --error: #C1292E;
+  --warning: #D4A037;
+
+  --background: var(--imperial-night);
+  --foreground: var(--parchment-cream);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--imperial-night);
+    --foreground: var(--parchment-cream);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--imperial-gold);
+  --color-secondary: var(--imperial-navy);
+  --color-accent: var(--imperial-gold);
+  --color-muted: var(--warm-gray);
+  --color-destructive: var(--imperial-red);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  
+  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-imperial: 'Playfair Display', serif;
+  --font-garamond: 'Cormorant Garamond', serif;
+  --font-cinzel: 'Cinzel', serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* Typographie napoléonienne */
+.font-imperial {
+  font-family: var(--font-imperial);
+}
+
+.font-garamond {
+  font-family: var(--font-garamond);
+}
+
+.font-cinzel {
+  font-family: var(--font-cinzel);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Styles personnalisés */
+.imperial-gradient {
+  background: linear-gradient(135deg, var(--imperial-gold) 0%, var(--imperial-red) 100%);
+}
+
+.parchment-gradient {
+  background: linear-gradient(135deg, var(--parchment-cream) 0%, var(--warm-gray) 100%);
+}
+
+.military-border {
+  border: 2px solid var(--imperial-gold);
+  box-shadow: 0 0 0 1px var(--imperial-navy), inset 0 0 0 1px var(--imperial-gold);
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--imperial-navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--imperial-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--imperial-gold) 80%, transparent);
+}
